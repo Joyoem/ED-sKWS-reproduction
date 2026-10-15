@@ -1,0 +1,49 @@
+diff --git a/sparch/dataloaders/__pycache__/__init__.cpython-39.pyc b/sparch/dataloaders/__pycache__/__init__.cpython-39.pyc
+index 18edd59..d7ab198 100644
+Binary files a/sparch/dataloaders/__pycache__/__init__.cpython-39.pyc and b/sparch/dataloaders/__pycache__/__init__.cpython-39.pyc differ
+diff --git a/sparch/dataloaders/__pycache__/nonspiking_datasets.cpython-39.pyc b/sparch/dataloaders/__pycache__/nonspiking_datasets.cpython-39.pyc
+index 1fca69a..d64c644 100644
+Binary files a/sparch/dataloaders/__pycache__/nonspiking_datasets.cpython-39.pyc and b/sparch/dataloaders/__pycache__/nonspiking_datasets.cpython-39.pyc differ
+diff --git a/sparch/dataloaders/nonspiking_datasets.py b/sparch/dataloaders/nonspiking_datasets.py
+index 9168d11..5ae5afd 100644
+--- a/sparch/dataloaders/nonspiking_datasets.py
++++ b/sparch/dataloaders/nonspiking_datasets.py
+@@ -286,5 +286,6 @@ def load_hd_or_sc(
+         shuffle=shuffle,
+         num_workers=workers,
+         pin_memory=True,
++        drop_last=(split == "training"),
+     )
+     return loader
+diff --git a/sparch/exp.py b/sparch/exp.py
+index 12d2ff8..17d8915 100644
+--- a/sparch/exp.py
++++ b/sparch/exp.py
+@@ -26,7 +26,8 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
+ 
+ from sparch.dataloaders.nonspiking_datasets import load_hd_or_sc
+ from sparch.dataloaders.spiking_datasets import load_shd_or_ssc
+-from sparch.dataloaders.words100_dataset import load_100words
++# Modern PyTorch port: unused SC-100 dependency disabled
++# from sparch.dataloaders.words100_dataset import load_100words
+ from sparch.models.anns import ANN
+ from sparch.models.snns import SNN
+ from sparch.parsers.model_config import print_model_options
+@@ -226,7 +227,7 @@ class Experiment:
+             # Loading best model
+             if self.save_best:
+                 self.net = torch.load(
+-                    f"{self.checkpoint_dir}/best_model.pth", map_location=self.device
++                    f"{self.checkpoint_dir}/best_model.pth", map_location=self.device, weights_only=False,
+                 )
+                 logging.info(
+                     f"Loading best model, epoch={best_epoch}, valid acc={best_acc}"
+@@ -395,7 +396,7 @@ class Experiment:
+         layer_sizes = [self.nb_hiddens] * (self.nb_layers - 1) + [self.nb_outputs]
+ 
+         if self.use_pretrained_model:
+-            self.net = torch.load(self.load_path, map_location=self.device)
++            self.net = torch.load(self.load_path, map_location=self.device,weights_only=False,)
+             logging.info(f"\nLoaded model at: {self.load_path}\n {self.net}\n")
+ 
+         elif self.model_type in ["LIF", "adLIF", "RLIF", "RadLIF"]:

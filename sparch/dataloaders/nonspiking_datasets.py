@@ -286,5 +286,6 @@ def load_hd_or_sc(
         shuffle=shuffle,
         num_workers=workers,
         pin_memory=True,
+        drop_last=(split == "training"),
     )
     return loader
